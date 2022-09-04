@@ -100,5 +100,23 @@ T = [['.0..',
       '....']]
 
 # Green S, Red Z, Cyan I, Yellow O, Blue J, Orange L, Purple T
-pieces = [S, Z, I, O, J, L, T]
+piece_types = [S, Z, I, O, J, L, T]
 piece_colors = [(5, 196, 107), (255, 82, 82), (0, 216, 214), (255, 165, 2), (56, 103, 214), (255, 121, 63), (136, 84, 208)]
+
+class Piece(object):
+    def __init__(self, column, row, piece):
+        self.x = column
+        self.y = row
+        self.piece = piece
+        self.color = piece_colors[piece_types.index(piece)]
+        self.rotation = 0
+
+def create_grid(locked_positions={}):
+    grid = [[(0,0,0) for _ in range(play_width // block_size)] for _ in range(play_height // block_size)]
+    for y in range(len(grid)):
+        for x in range(len(grid[y])):
+            if (x, y) in locked_positions:
+                block_color = locked_positions[(x, y)]
+                grid[y][x] = block_color
+    return grid
+
