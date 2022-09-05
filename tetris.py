@@ -166,7 +166,18 @@ def convert_piece_format(piece):
     return positions
 
 def valid_location(piece, grid):
-    pass
+    accepted_locations = []
+    for y in range(ROWS):
+        for x in range(COLUMNS):
+            if grid[y][x] == PLAY_COLOR:
+                accepted_locations.append((y, x))
+
+    formatted_piece_locations = convert_piece_format(piece)
+    for position in formatted_piece_locations:
+        if position not in accepted_locations:
+            if position[0] > -1:
+                return False
+    return True
 
 def main(surface):
     locked_positions = {}
