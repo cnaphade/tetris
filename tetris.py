@@ -121,8 +121,8 @@ def create_grid(locked_positions = {}):
     grid = [[PLAY_COLOR for _ in range(COLUMNS)] for _ in range(ROWS)]
     for y in range(ROWS):
         for x in range(COLUMNS):
-            if (x, y) in locked_positions:
-                block_color = locked_positions[(x, y)]
+            if (y, x) in locked_positions:
+                block_color = locked_positions[(y, x)]
                 grid[y][x] = block_color
     return grid
 
@@ -160,7 +160,7 @@ def convert_piece_format(piece):
     positions = []
     orientation = piece.piece_type[piece.rotation]
     for delta_y in range(len(orientation)):
-        for delta_x in range(len(orientation[y])):
+        for delta_x in range(len(orientation[delta_y])):
             if orientation[delta_y][delta_x] == '0':
                 positions.append((piece.y + delta_y, piece.x + delta_x))
     return positions
@@ -178,6 +178,12 @@ def valid_location(piece, grid):
             if position[0] > -1:
                 return False
     return True
+
+def check_failure(locked_positions):
+    for position in locked_positions:
+        if position[0] < 1:
+            return True
+    return False
 
 def main(surface):
     locked_positions = {}
