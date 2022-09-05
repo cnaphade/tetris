@@ -14,6 +14,8 @@ PLAY_WIDTH = 400 # 30 width per block for 10 blocks
 PLAY_HEIGHT = 800 # 30 height per block for 20 blocks
 WINDOW_COLOR = (10, 15, 20)
 PLAY_COLOR = (20, 30, 40)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
 # top-left xy coordinates (origin frame of reference)
 top_left_x = ((SCREEN_WIDTH / 2) - PLAY_WIDTH)
@@ -126,20 +128,28 @@ def create_grid(locked_positions = {}):
 
 def draw_grid(surface, grid):
     for y in range(ROWS):
+        horizontal_start = (top_left_x, top_left_y + (y * BLOCK_SIZE))
+        horizontal_end = (top_left_x + PLAY_WIDTH, top_left_y + (y * BLOCK_SIZE))
+        pygame.draw.line(surface, BLACK, horizontal_start, horizontal_end)
         for x in range(COLUMNS):
-            block_x = (top_left_x + (x * BLOCK_SIZE))
-            block_y = (top_left_y + (y * BLOCK_SIZE))
-            pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
-    pygame.draw.rect(surface, (255, 255, 255), (top_left_x, top_left_y, PLAY_WIDTH, PLAY_HEIGHT), 4)
-
+            vertical_start = (top_left_x + (x * BLOCK_SIZE), top_left_y)
+            vertical_end = (top_left_x + (x * BLOCK_SIZE), top_left_y + PLAY_HEIGHT)
+            pygame.draw.line(surface, BLACK, vertical_start, vertical_end)
+            
 def draw_window(surface, grid):
     surface.fill(WINDOW_COLOR)
     font = pygame.font.SysFont('phosphate', 100)
-    title = font.render('TETRIS', 1, (255, 255, 255))
+    title = font.render('TETRIS', 1, WHITE)
     title_x = (SCREEN_WIDTH * 0.75) - (title.get_width() / 2)
     title_y = top_left_y
     surface.blit(title, (title_x, title_y))
 
+    for y in range(ROWS):
+        for x in range(COLUMNS):
+            block_x = (top_left_x + (x * BLOCK_SIZE))
+            block_y = (top_left_y + (y * BLOCK_SIZE))
+            pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
+    pygame.draw.rect(surface, WHITE, (top_left_x - 5, top_left_y - 5, PLAY_WIDTH + 11, PLAY_HEIGHT + 11), 5)
     draw_grid(surface, grid)
     pygame.display.update()
 
@@ -187,7 +197,7 @@ def main(surface):
 def main_menu(window):
     main(window)
 
-window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
 pygame.display.set_caption('Tetris')
 main_menu(window)
 
