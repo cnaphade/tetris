@@ -5,17 +5,19 @@ import random
 pygame.font.init()
 
 # 10x20 grid
-screen_width = 700
-screen_height = 1000
-play_width = 300 # 30 width per block for 10 blocks
-play_height = 600 # 30 height per block for 20 blocks
-block_size = 30
+SCREEN_WIDTH = 700
+SCREEN_HEIGHT = 1000
+COLUMNS = 10
+ROWS = 20
+BLOCK_SIZE = 30
+PLAY_WIDTH = 300 # 30 width per block for 10 blocks
+PLAY_HEIGHT = 600 # 30 height per block for 20 blocks
 
 # top-left xy coordinates (origin frame of reference)
-top_left_x = (screen_width - play_width) // 2
-top_left_y = (screen_height - play_height) // 2
+top_left_x = (SCREEN_WIDTH - PLAY_WIDTH) // 2
+top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 2
 
-# tetrominoes schematic
+# tetromino schematic
 S = [['....', 
       '.00.', 
       '00..', 
@@ -111,12 +113,42 @@ class Piece(object):
         self.color = piece_colors[piece_types.index(piece)]
         self.rotation = 0
 
-def create_grid(locked_positions={}):
-    grid = [[(0,0,0) for _ in range(play_width // block_size)] for _ in range(play_height // block_size)]
-    for y in range(len(grid)):
-        for x in range(len(grid[y])):
+def create_grid(locked_positions = {}):
+    grid = [[(0,0,0) for _ in range(COLUMNS)] for _ in range(ROWS)]
+    # rows: y-axis, columns: x-axis
+    for y in range(ROWS):
+        for x in range(COLUMNS):
             if (x, y) in locked_positions:
                 block_color = locked_positions[(x, y)]
                 grid[y][x] = block_color
     return grid
 
+def draw_grid(surface, grid):
+    for y in range(ROWS):
+        for x in range(COLUMNS):
+            block_x = (top_left_x + (x * BLOCK_SIZE))
+            block_y = (top_left_y + (y * BLOCK_SIZE))
+            pygame.draw.rect(surface, grid[y][x], (block_x, block_y), BLOCK_SIZE, BLOCK_SIZE, 0)
+    pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y), PLAY_WIDTH, PLAY_HEIGHT, 4)
+
+def draw_window(surface, grid):
+    surface.fill((0, 0, 0))
+    font = pygame.font.SysFont()
+    title = font.render('Tetris', 1, (255, 255, 255))
+    title_x = top_left_x + (PLAY_WIDTH / 2) - (title.get_width() / 2)
+    title_y = top_left_y + (PLAY_HEIGHT / 2) - (title.get_height() / 2)
+    surface.blit(title, (title_x, title_y))
+
+    draw_grid(surface, grid)
+    pygame.display.update()
+
+def get_random_shape():
+    return random.choice(piece_types)
+
+
+
+
+
+
+
+    
