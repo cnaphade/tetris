@@ -126,7 +126,7 @@ def create_grid(locked_positions = {}):
                 grid[y][x] = block_color
     return grid
 
-def draw_grid(surface, grid):
+def draw_grid(surface):
     for y in range(ROWS):
         horizontal_start = (top_left_x, top_left_y + (y * BLOCK_SIZE))
         horizontal_end = (top_left_x + PLAY_WIDTH, top_left_y + (y * BLOCK_SIZE))
@@ -150,11 +150,20 @@ def draw_window(surface, grid):
             block_y = (top_left_y + (y * BLOCK_SIZE))
             pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
     pygame.draw.rect(surface, WHITE, (top_left_x - 5, top_left_y - 5, PLAY_WIDTH + 11, PLAY_HEIGHT + 11), 5)
-    draw_grid(surface, grid)
+    draw_grid(surface)
     pygame.display.update()
 
 def get_random_piece():
     return Piece(COLUMNS / 2, 0, random.choice(piece_types))
+
+def convert_piece_format(piece):
+    positions = []
+    orientation = piece.piece_type[piece.rotation]
+    for delta_y in range(len(orientation)):
+        for delta_x in range(len(orientation[y])):
+            if orientation[delta_y][delta_x] == '0':
+                positions.append((piece.y + delta_y, piece.x + delta_x))
+    return positions
 
 def valid_location(piece, grid):
     pass
