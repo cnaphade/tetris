@@ -211,9 +211,27 @@ def valid_location(piece, grid):
                 return False
     return True
 
-def check_failure(locked_positions):
+def check_failure(locked_positions, surface, score):
     for position in locked_positions:
         if position[0] < 1:
+            surface.fill(WINDOW_COLOR)
+
+            # You Lose!
+            font = pygame.font.SysFont('futura', 42)
+            label = font.render('You Lose!', 1, WHITE)
+            label_x = (SCREEN_WIDTH - label.get_width()) / 2
+            label_y = (SCREEN_HEIGHT - label.get_height()) / 2
+            surface.blit(label, (label_x, label_y))
+
+            # Final Score
+            font = pygame.font.SysFont('futura', 24)
+            label = font.render('Final Score: ' + str(score), 1, WHITE)
+            label_x = (SCREEN_WIDTH - label.get_width()) / 2
+            label_y = (SCREEN_HEIGHT - label.get_height()) / 2 + BLOCK_SIZE
+            surface.blit(label, (label_x, label_y))
+
+            pygame.display.update()
+            pygame.time.delay(2000)
             return True
     return False
 
@@ -309,13 +327,14 @@ def main(surface):
             # clear rows if completed and add to score
             score += clear_rows(locked_positions, grid) * 10
         
-        # break loop when player loses
-        if check_failure(locked_positions):
-            run = False
-
+        # render play
         draw_window(surface, grid, score)
         draw_next_tetromino(next_piece, surface)
         pygame.display.update()
+
+        # break loop when player loses
+        if check_failure(locked_positions, surface, score):
+            run = False
 
 def main_menu(window):
     run = True
