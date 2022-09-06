@@ -25,7 +25,7 @@ top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 game_over_sound = pygame.mixer.Sound("gameover.wav")
 clear_row_sound = pygame.mixer.Sound("line.wav")
 
-# tetromino schematic
+# tetromino schematic of orientation
 S = [['.00.', 
       '00..',
       '....', 
@@ -121,6 +121,7 @@ T = [['.0..',
 piece_types = [S, Z, I, O, J, L, T]
 piece_colors = [(5, 196, 107), (255, 82, 82), (0, 216, 214), (255, 165, 2), (56, 103, 214), (255, 121, 63), (136, 84, 208)]
 
+# define a tetromino object
 class Piece(object):
     def __init__(self, column, row, piece_type):
         self.x = column
@@ -129,6 +130,7 @@ class Piece(object):
         self.color = piece_colors[piece_types.index(piece_type)]
         self.rotation = 0 # mod len(piece_type)
 
+# initialize grid lines and locked pieces in the play area
 def create_grid(locked_positions):
     grid = [[PLAY_COLOR for _ in range(COLUMNS)] for _ in range(ROWS)]
     for y in range(ROWS):
@@ -138,7 +140,17 @@ def create_grid(locked_positions):
                 grid[y][x] = block_color
     return grid
 
-def draw_grid(surface):
+# draw play area and grid lines 
+def draw_grid(surface, grid):
+    # draw play area with all the pieces
+    for y in range(ROWS):
+        for x in range(COLUMNS):
+            block_x = (top_left_x + (x * BLOCK_SIZE))
+            block_y = (top_left_y + (y * BLOCK_SIZE))
+            pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
+    pygame.draw.rect(surface, WHITE, (top_left_x - 5, top_left_y - 5, PLAY_WIDTH + 11, PLAY_HEIGHT + 11), 5)
+    
+    # draw grid lines
     for y in range(ROWS):
         horizontal_start = (top_left_x, top_left_y + (y * BLOCK_SIZE))
         horizontal_end = (top_left_x + PLAY_WIDTH, top_left_y + (y * BLOCK_SIZE))
@@ -147,7 +159,8 @@ def draw_grid(surface):
             vertical_start = (top_left_x + (x * BLOCK_SIZE), top_left_y)
             vertical_end = (top_left_x + (x * BLOCK_SIZE), top_left_y + PLAY_HEIGHT)
             pygame.draw.line(surface, BLACK, vertical_start, vertical_end)
-            
+
+# draw game window with text            
 def draw_window(surface, grid, current_score, high_score):
     surface.fill(WINDOW_COLOR)
 
@@ -172,21 +185,20 @@ def draw_window(surface, grid, current_score, high_score):
     label_y = (top_left_y + PLAY_HEIGHT) * 0.75 + (BLOCK_SIZE * 2)
     surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
 
-    for y in range(ROWS):
-        for x in range(COLUMNS):
-            block_x = (top_left_x + (x * BLOCK_SIZE))
-            block_y = (top_left_y + (y * BLOCK_SIZE))
-            pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
-    pygame.draw.rect(surface, WHITE, (top_left_x - 5, top_left_y - 5, PLAY_WIDTH + 11, PLAY_HEIGHT + 11), 5)
-    draw_grid(surface)
+    # draw grid after window set up
+    draw_grid(surface, grid)
 
+# Show user the next piece
 def draw_next_tetromino(piece, surface):
+    # Display text for next tetromino
     font = pygame.font.SysFont('futura', 24)
     label = font.render('Next Tetromino', 1, WHITE)
     label_x = (SCREEN_WIDTH * 0.75) - (label.get_width() / 2)
     label_y = (top_left_y + PLAY_HEIGHT) / 2
-    piece_orientation = piece.piece_type[piece.rotation]
+    surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
 
+    # Display next tetromino
+    piece_orientation = piece.piece_type[piece.rotation]
     for y in range(len(piece_orientation)):
         for x in range(len(piece_orientation[y])):
             if piece_orientation[y][x] == '0':
@@ -194,11 +206,12 @@ def draw_next_tetromino(piece, surface):
                 next_piece_y = label_y + (y * BLOCK_SIZE)
                 pygame.draw.rect(surface, piece.color, (next_piece_x, next_piece_y, BLOCK_SIZE, BLOCK_SIZE), 0)
                 pygame.draw.rect(surface, BLACK, (next_piece_x, next_piece_y, BLOCK_SIZE, BLOCK_SIZE), 1)
-    surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
-
+    
+# generate random piece
 def get_random_piece():
     return Piece(5, 0, random.choice(piece_types))
 
+# convert piece orientation to grid positions
 def convert_piece_format(piece):
     positions = []
     orientation = piece.piece_type[piece.rotation]
@@ -208,6 +221,7 @@ def convert_piece_format(piece):
                 positions.append((piece.y + delta_y, piece.x + delta_x))
     return positions
 
+# check if piece in valid location
 def valid_location(piece, grid):
     accepted_locations = []
     for y in range(ROWS):
@@ -222,6 +236,7 @@ def valid_location(piece, grid):
                 return False
     return True
 
+# check if game lost and display message
 def check_failure(locked_positions, surface, score):
     for position in locked_positions:
         if position[0] < 1:
@@ -248,20 +263,17 @@ def check_failure(locked_positions, surface, score):
             return True
     return False
 
+# update high score in save file
 def update_high_score(current_score):
-    with open('high_score.txt', 'r') as score_file:
-        score_file.seek(0)
-        chars = score_file.readlines()
-        high_score = int(chars[0].strip())
-
+    high_score = get_high_score()
     with open('high_score.txt', 'w') as score_file:
         if high_score < current_score:
             score_file.write(str(current_score))
         else:
-            score_file.write(str(high_score))
-            
+            score_file.write(str(high_score))          
     score_file.close()
 
+# lookup high score in save file
 def get_high_score():
     with open('high_score.txt', 'r') as score_file:
         score_file.seek(0)
@@ -270,6 +282,7 @@ def get_high_score():
     score_file.close()
     return high_score
 
+# clear row when all pieces filled, move grid down, and return score
 def clear_rows(locked_positions, grid):
     shift = 0
     for y in range(ROWS - 1, -1, -1):
@@ -287,6 +300,7 @@ def clear_rows(locked_positions, grid):
                     locked_positions[(y + shift, x)] = locked_positions.pop((y, x))
     return shift ** 2
 
+# main game loop
 def main(surface, high_score):
     run = True
     locked_positions = {}
@@ -308,7 +322,7 @@ def main(surface, high_score):
         level_time += clock.get_rawtime()
         clock.tick()
 
-        # level up
+        # level up - increase piece fall speed
         if level_time / 1000 > 5:
             level_time = 0
             if fall_speed > 0.14:
@@ -322,33 +336,34 @@ def main(surface, high_score):
                 current_piece.y -= 1
                 change_piece = True
 
+        # handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.mixer.music.stop()
             elif event.type == pygame.KEYDOWN:
-                # left-arrow key
+                # left-arrow key - move left if possible
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
                     if not valid_location(current_piece, grid):
                         current_piece.x += 1
-                # right-arrow key
+                # right-arrow key - move right if possible
                 elif event.key == pygame.K_RIGHT:
                     current_piece.x += 1
                     if not valid_location(current_piece, grid):
                         current_piece.x -= 1
-                # down-arrow key
+                # down-arrow key - move down if possible
                 elif event.key == pygame.K_DOWN:
                     current_piece.y += 1
                     if not valid_location(current_piece, grid):
                         current_piece.y -= 1
-                # up-arrow key
+                # up-arrow key - change piece orientation if possible
                 elif event.key == pygame.K_UP:
                     current_piece.rotation = (current_piece.rotation + 1) % len(current_piece.piece_type)
                     if not valid_location(current_piece, grid):
                         current_piece.rotation = (current_piece.rotation - 1) % len(current_piece.piece_type)
 
-        # display current piece in grid
+        # put current piece in grid
         piece_locations = convert_piece_format(current_piece)
         for i in range(len(piece_locations)):
             y, x = piece_locations[i]
@@ -376,6 +391,7 @@ def main(surface, high_score):
             run = False
             update_high_score(score)
 
+# main menu to start game
 def main_menu(window):
     run = True
     while run:
@@ -395,6 +411,7 @@ def main_menu(window):
         window.blit(label, (label_x, label_y))
         pygame.display.update()
 
+        # Start or quit game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -404,6 +421,7 @@ def main_menu(window):
 
     pygame.display.quit()
 
+# Initialize window and open main menu
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
 pygame.display.set_caption('Tetris')
 main_menu(window)
