@@ -21,6 +21,10 @@ WHITE = (255, 255, 255)
 top_left_x = ((SCREEN_WIDTH / 2) - PLAY_WIDTH)
 top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 
+# game sounds
+game_over_sound = pygame.mixer.Sound("gameover.wav")
+clear_row_sound = pygame.mixer.Sound("line.wav")
+
 # tetromino schematic
 S = [['.00.', 
       '00..',
@@ -222,6 +226,8 @@ def check_failure(locked_positions, surface, score):
     for position in locked_positions:
         if position[0] < 1:
             surface.fill(WINDOW_COLOR)
+            pygame.mixer.music.stop()
+            pygame.mixer.Sound.play(game_over_sound)
 
             # You Lose!
             font = pygame.font.SysFont('futura', 42)
@@ -275,6 +281,7 @@ def clear_rows(locked_positions, grid):
                     del locked_positions[(y, x)]
         # shift other rows down            
         elif shift > 0:
+            pygame.mixer.Sound.play(clear_row_sound)
             for x in range(COLUMNS):
                 if (y, x) in locked_positions:
                     locked_positions[(y + shift, x)] = locked_positions.pop((y, x))
@@ -287,6 +294,8 @@ def main(surface, high_score):
     next_piece = get_random_piece()
     change_piece = False
 
+    pygame.mixer.music.load("tetris_theme.mp3")
+    pygame.mixer.music.play(-1)
     clock = pygame.time.Clock()
     fall_time = 0
     level_time = 0
@@ -316,6 +325,7 @@ def main(surface, high_score):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.mixer.music.stop()
             elif event.type == pygame.KEYDOWN:
                 # left-arrow key
                 if event.key == pygame.K_LEFT:
