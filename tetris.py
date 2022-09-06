@@ -316,11 +316,33 @@ def main(surface):
         draw_window(surface, grid, score)
         draw_next_tetromino(next_piece, surface)
         pygame.display.update()
-        
-    pygame.display.quit()
 
 def main_menu(window):
-    main(window)
+    run = True
+    while run:
+        window.fill(WINDOW_COLOR)
+        # Title
+        font = pygame.font.SysFont('phosphate', 200)
+        title = font.render('TETRIS', 1, WHITE)
+        title_x = (SCREEN_WIDTH - title.get_width()) / 2
+        title_y = (SCREEN_HEIGHT - title.get_height()) / 2
+        window.blit(title, (title_x, title_y))
+
+        # Press Any Key
+        font = pygame.font.SysFont('futura', 24)
+        label = font.render('Press Any Key To Play!', 1, WHITE)
+        label_x = (SCREEN_WIDTH - title.get_width()) / 2
+        label_y = (SCREEN_HEIGHT - title.get_height()) / 2
+        window.blit(label, (label_x, label_y))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                main(window)
+
+    pygame.display.quit()
 
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
 pygame.display.set_caption('Tetris')
