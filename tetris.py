@@ -154,7 +154,7 @@ def draw_window(surface, grid):
     pygame.display.update()
 
 def get_random_piece():
-    return Piece(COLUMNS / 2, 0, random.choice(piece_types))
+    return Piece(5, 0, random.choice(piece_types))
 
 def convert_piece_format(piece):
     positions = []
@@ -204,7 +204,7 @@ def main(surface):
         if fall_time / 1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            if not valid_location(current_piece) and current_piece.y > 0:
+            if not valid_location(current_piece, grid) and current_piece.y > 0:
                 current_piece.y -= 1
                 change_piece = True
 
@@ -233,7 +233,28 @@ def main(surface):
                     if not valid_location(current_piece, grid):
                         current_piece.rotation = (current_piece.rotation - 1) % len(current_piece.piece_type)
 
+        # display current piece in grid
+        piece_locations = convert_piece_format(current_piece)
+        for i in range(len(piece_locations)):
+            y, x = piece_locations[i]
+            if y > -1:
+                grid[y][x] = current_piece.color
+        
+        # lock piece when it hits the ground
+        if change_piece:
+            for i in range(len(piece_locations)):
+                locked_positions[piece_locations[i]] = current_piece.color
+            current_piece = next_piece
+            next_piece = get_random_piece()
+            change_piece = False
+        
+        # break loop when player loses
+        if check_failure(locked_positions):
+            run = False
+
         draw_window(surface, grid)
+        
+    pygame.display.quit()
 
 def main_menu(window):
     main(window)
