@@ -125,7 +125,7 @@ class Piece(object):
         self.color = piece_colors[piece_types.index(piece_type)]
         self.rotation = 0 # mod len(piece_type)
 
-def create_grid(locked_positions = {}):
+def create_grid(locked_positions):
     grid = [[PLAY_COLOR for _ in range(COLUMNS)] for _ in range(ROWS)]
     for y in range(ROWS):
         for x in range(COLUMNS):
@@ -183,7 +183,7 @@ def valid_location(piece, grid):
     formatted_piece_locations = convert_piece_format(piece)
     for position in formatted_piece_locations:
         if position not in accepted_locations:
-            if position[0] > -1 or grid[position[0]][position[1]] != PLAY_COLOR:
+            if position[0] > -1:
                 return False
     return True
 
@@ -192,6 +192,21 @@ def check_failure(locked_positions):
         if position[0] < 1:
             return True
     return False
+
+def clear_rows(locked_positions, grid):
+    shift = 0
+    for y in range(ROWS - 1, -1, -1):
+        # remove complete rows
+        if PLAY_COLOR not in grid[y]:
+            shift += 1
+            for x in range(COLUMNS):
+                if (y, x) in locked_positions:
+                    del locked_positions[(y, x)]
+        # shift other rows down            
+        elif shift > 0:
+            for x in range(COLUMNS):
+                if (y, x) in locked_positions:
+                    locked_positions[(y + shift, x)] = locked_positions.pop((y, x))
 
 def main(surface):
     run = True
@@ -255,6 +270,9 @@ def main(surface):
             current_piece = next_piece
             next_piece = get_random_piece()
             change_piece = False
+
+            # clear rows if completed
+            clear_rows(locked_positions, grid)
         
         # break loop when player loses
         if check_failure(locked_positions):
