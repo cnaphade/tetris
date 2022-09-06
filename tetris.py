@@ -1,3 +1,4 @@
+from signal import SIG_DFL
 import pygame
 import random
 
@@ -57,8 +58,8 @@ I = [['.0..',
       '0000',  
       '....']]
 
-O = [['.00.',
-      '.00.',
+O = [['00..',
+      '00..',
       '....', 
       '....']]
 
@@ -79,21 +80,21 @@ J = [['0...',
       '00..', 
       '....']]
 
-L = [['...0', 
-      '.000', 
+L = [['..0.', 
+      '000.', 
       '....', 
       '....'],
-     ['..0.', 
-      '..0.', 
-      '..00', 
+     ['.0..', 
+      '.0..', 
+      '.00.', 
       '....'],
      ['....', 
-      '.000', 
-      '.0..', 
+      '000.', 
+      '0...', 
       '....'],
-     ['.00.', 
-      '..0.', 
-      '..0.', 
+     ['00..', 
+      '.0..', 
+      '.0..', 
       '....']]
 
 T = [['.0..', 
@@ -159,7 +160,22 @@ def draw_window(surface, grid):
             pygame.draw.rect(surface, grid[y][x], (block_x, block_y, BLOCK_SIZE, BLOCK_SIZE), 0)
     pygame.draw.rect(surface, WHITE, (top_left_x - 5, top_left_y - 5, PLAY_WIDTH + 11, PLAY_HEIGHT + 11), 5)
     draw_grid(surface)
-    pygame.display.update()
+
+def draw_next_tetromino(piece, surface):
+    font = pygame.font.SysFont('futura', 24)
+    label = font.render('Next Tetromino', 1, WHITE)
+    label_x = (SCREEN_WIDTH * 0.75) - (label.get_width() / 2)
+    label_y = (top_left_y + PLAY_HEIGHT) / 2
+    piece_orientation = piece.piece_type[piece.rotation]
+
+    for y in range(len(piece_orientation)):
+        for x in range(len(piece_orientation[y])):
+            if piece_orientation[y][x] == '0':
+                next_piece_x = (SCREEN_WIDTH * 0.75) - (BLOCK_SIZE * 1.5) + (x * BLOCK_SIZE)
+                next_piece_y = label_y + (y * BLOCK_SIZE)
+                pygame.draw.rect(surface, piece.color, (next_piece_x, next_piece_y, BLOCK_SIZE, BLOCK_SIZE), 0)
+                pygame.draw.rect(surface, BLACK, (next_piece_x, next_piece_y, BLOCK_SIZE, BLOCK_SIZE), 1)
+    surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
 
 def get_random_piece():
     return Piece(5, 0, random.choice(piece_types))
@@ -279,6 +295,8 @@ def main(surface):
             run = False
 
         draw_window(surface, grid)
+        draw_next_tetromino(next_piece, surface)
+        pygame.display.update()
         
     pygame.display.quit()
 
