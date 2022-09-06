@@ -22,22 +22,22 @@ top_left_x = ((SCREEN_WIDTH / 2) - PLAY_WIDTH)
 top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 
 # tetromino schematic
-S = [['....', 
-      '.00.', 
-      '00..', 
+S = [['.00.', 
+      '00..',
+      '....', 
       '....'], 
      ['0...', 
       '00..', 
       '.0..', 
       '....']]
 
-Z = [['....', 
-      '.00.', 
-      '..00', 
+Z = [['00..', 
+      '.00.',
+      '....', 
       '....'], 
-     ['...0', 
-      '..00', 
-      '..0.', 
+     ['..0.', 
+      '.00.', 
+      '.0..', 
       '....']]
 
 I = [['.0..', 
@@ -47,11 +47,19 @@ I = [['.0..',
      ['....', 
       '0000', 
       '....', 
+      '....'],
+     ['..0.', 
+      '..0.', 
+      '..0.', 
+      '..0.'], 
+     ['....',
+      '....', 
+      '0000',  
       '....']]
 
-O = [['....', 
-      '.00.', 
-      '.00.', 
+O = [['.00.',
+      '.00.',
+      '....', 
       '....']]
 
 J = [['0...', 
@@ -175,7 +183,7 @@ def valid_location(piece, grid):
     formatted_piece_locations = convert_piece_format(piece)
     for position in formatted_piece_locations:
         if position not in accepted_locations:
-            if position[0] > -1:
+            if position[0] > -1 or grid[position[0]][position[1]] != PLAY_COLOR:
                 return False
     return True
 
