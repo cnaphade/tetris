@@ -230,14 +230,23 @@ def main(surface):
     current_piece = get_random_piece()
     next_piece = get_random_piece()
     change_piece = False
+
     clock = pygame.time.Clock()
     fall_time = 0
-    fall_speed = 0.30
+    level_time = 0
+    fall_speed = 0.25
 
     while run:
         grid = create_grid(locked_positions)
         fall_time += clock.get_rawtime()
+        level_time += clock.get_rawtime()
         clock.tick()
+
+        # level up
+        if level_time / 1000 > 5:
+            level_time = 0
+            if fall_speed > 0.14:
+                fall_speed -= 0.005
 
         # move piece down until collision
         if fall_time / 1000 > fall_speed:
@@ -306,12 +315,3 @@ def main_menu(window):
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
 pygame.display.set_caption('Tetris')
 main_menu(window)
-
-
-
-
-
-
-
-
-    
