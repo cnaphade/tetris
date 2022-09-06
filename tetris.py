@@ -144,7 +144,7 @@ def draw_grid(surface):
             vertical_end = (top_left_x + (x * BLOCK_SIZE), top_left_y + PLAY_HEIGHT)
             pygame.draw.line(surface, BLACK, vertical_start, vertical_end)
             
-def draw_window(surface, grid, score):
+def draw_window(surface, grid, current_score, high_score):
     surface.fill(WINDOW_COLOR)
 
     # Display title
@@ -156,9 +156,16 @@ def draw_window(surface, grid, score):
 
     # Display current score
     font = pygame.font.SysFont('futura', 24)
-    label = font.render('Score: ' + str(score), 1, WHITE)
+    label = font.render('Current Score: ' + str(current_score), 1, WHITE)
     label_x = (SCREEN_WIDTH * 0.75) - (label.get_width() / 2)
     label_y = (top_left_y + PLAY_HEIGHT) * 0.75 + (BLOCK_SIZE / 2)
+    surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.25)))
+
+    # Display high score
+    font = pygame.font.SysFont('futura', 24)
+    label = font.render('High Score: ' + str(high_score), 1, WHITE)
+    label_x = (SCREEN_WIDTH * 0.75) - (label.get_width() / 2)
+    label_y = (top_left_y + PLAY_HEIGHT) * 0.75 + (BLOCK_SIZE * 2)
     surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
 
     for y in range(ROWS):
@@ -235,6 +242,28 @@ def check_failure(locked_positions, surface, score):
             return True
     return False
 
+def update_high_score(current_score):
+    with open('high_score.txt', 'r') as score_file:
+        score_file.seek(0)
+        chars = score_file.readlines()
+        high_score = int(chars[0].strip())
+
+    with open('high_score.txt', 'w') as score_file:
+        if high_score < current_score:
+            score_file.write(str(current_score))
+        else:
+            score_file.write(str(high_score))
+            
+    score_file.close()
+
+def get_high_score():
+    with open('high_score.txt', 'r') as score_file:
+        score_file.seek(0)
+        chars = score_file.readlines()
+        high_score = int(chars[0].strip())      
+    score_file.close()
+    return high_score
+
 def clear_rows(locked_positions, grid):
     shift = 0
     for y in range(ROWS - 1, -1, -1):
@@ -251,7 +280,7 @@ def clear_rows(locked_positions, grid):
                     locked_positions[(y + shift, x)] = locked_positions.pop((y, x))
     return shift ** 2
 
-def main(surface):
+def main(surface, high_score):
     run = True
     locked_positions = {}
     current_piece = get_random_piece()
@@ -328,13 +357,14 @@ def main(surface):
             score += clear_rows(locked_positions, grid) * 10
         
         # render play
-        draw_window(surface, grid, score)
+        draw_window(surface, grid, score, high_score)
         draw_next_tetromino(next_piece, surface)
         pygame.display.update()
 
         # break loop when player loses
         if check_failure(locked_positions, surface, score):
             run = False
+            update_high_score(score)
 
 def main_menu(window):
     run = True
@@ -359,7 +389,8 @@ def main_menu(window):
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
-                main(window)
+                high_score = get_high_score()
+                main(window, high_score)
 
     pygame.display.quit()
 
