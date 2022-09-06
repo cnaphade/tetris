@@ -1,4 +1,3 @@
-from signal import SIG_DFL
 import pygame
 import random
 
@@ -145,13 +144,22 @@ def draw_grid(surface):
             vertical_end = (top_left_x + (x * BLOCK_SIZE), top_left_y + PLAY_HEIGHT)
             pygame.draw.line(surface, BLACK, vertical_start, vertical_end)
             
-def draw_window(surface, grid):
+def draw_window(surface, grid, score):
     surface.fill(WINDOW_COLOR)
+
+    # Display title
     font = pygame.font.SysFont('phosphate', 100)
     title = font.render('TETRIS', 1, WHITE)
     title_x = (SCREEN_WIDTH * 0.75) - (title.get_width() / 2)
     title_y = top_left_y
     surface.blit(title, (title_x, title_y))
+
+    # Display current score
+    font = pygame.font.SysFont('futura', 24)
+    label = font.render('Score: ' + str(score), 1, WHITE)
+    label_x = (SCREEN_WIDTH * 0.75) - (label.get_width() / 2)
+    label_y = (top_left_y + PLAY_HEIGHT) * 0.75 + (BLOCK_SIZE / 2)
+    surface.blit(label, (label_x, label_y - (BLOCK_SIZE * 1.5)))
 
     for y in range(ROWS):
         for x in range(COLUMNS):
@@ -223,6 +231,7 @@ def clear_rows(locked_positions, grid):
             for x in range(COLUMNS):
                 if (y, x) in locked_positions:
                     locked_positions[(y + shift, x)] = locked_positions.pop((y, x))
+    return shift ** 2
 
 def main(surface):
     run = True
@@ -235,6 +244,7 @@ def main(surface):
     fall_time = 0
     level_time = 0
     fall_speed = 0.25
+    score = 0
 
     while run:
         grid = create_grid(locked_positions)
@@ -296,14 +306,14 @@ def main(surface):
             next_piece = get_random_piece()
             change_piece = False
 
-            # clear rows if completed
-            clear_rows(locked_positions, grid)
+            # clear rows if completed and add to score
+            score += clear_rows(locked_positions, grid) * 10
         
         # break loop when player loses
         if check_failure(locked_positions):
             run = False
 
-        draw_window(surface, grid)
+        draw_window(surface, grid, score)
         draw_next_tetromino(next_piece, surface)
         pygame.display.update()
         
