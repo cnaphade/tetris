@@ -18,7 +18,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # top-left xy coordinates (origin frame of reference)
-top_left_x = ((SCREEN_WIDTH // 2) - PLAY_WIDTH)
+top_left_x = (SCREEN_WIDTH // 4) - (PLAY_WIDTH // 2)
 top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 
 # game sounds
@@ -352,7 +352,7 @@ def main(surface, high_score):
                 BLOCK_SIZE = (SCREEN_HEIGHT * 4) // 95
                 PLAY_WIDTH = COLUMNS * BLOCK_SIZE
                 PLAY_HEIGHT = ROWS * BLOCK_SIZE
-                top_left_x = ((SCREEN_WIDTH // 2) - PLAY_WIDTH)
+                top_left_x = (SCREEN_WIDTH // 4) - (PLAY_WIDTH // 2)
                 top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 
                 old_surface = surface
