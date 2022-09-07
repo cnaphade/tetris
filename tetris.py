@@ -9,16 +9,16 @@ SCREEN_WIDTH = 950
 SCREEN_HEIGHT = 950
 COLUMNS = 10
 ROWS = 20
-BLOCK_SIZE = 40
-PLAY_WIDTH = 400 # 30 width per block for 10 blocks
-PLAY_HEIGHT = 800 # 30 height per block for 20 blocks
+BLOCK_SIZE = (SCREEN_HEIGHT * 4) // 95
+PLAY_WIDTH = COLUMNS * BLOCK_SIZE
+PLAY_HEIGHT = ROWS * BLOCK_SIZE
 WINDOW_COLOR = (10, 15, 20)
 PLAY_COLOR = (20, 30, 40)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # top-left xy coordinates (origin frame of reference)
-top_left_x = ((SCREEN_WIDTH / 2) - PLAY_WIDTH)
+top_left_x = ((SCREEN_WIDTH // 2) - PLAY_WIDTH)
 top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
 
 # game sounds
@@ -302,6 +302,8 @@ def clear_rows(locked_positions, grid):
 
 # main game loop
 def main(surface, high_score):
+    global SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE, PLAY_WIDTH, PLAY_HEIGHT, top_left_x, top_left_y
+
     run = True
     locked_positions = {}
     current_piece = get_random_piece()
@@ -341,6 +343,21 @@ def main(surface, high_score):
             if event.type == pygame.QUIT:
                 run = False
                 pygame.mixer.music.stop()
+
+            elif event.type == pygame.VIDEORESIZE:
+                SCREEN_WIDTH = event.w
+                SCREEN_HEIGHT = event.h
+                BLOCK_SIZE = (SCREEN_HEIGHT * 4) // 95
+                PLAY_WIDTH = COLUMNS * BLOCK_SIZE
+                PLAY_HEIGHT = ROWS * BLOCK_SIZE
+                top_left_x = ((SCREEN_WIDTH // 2) - PLAY_WIDTH)
+                top_left_y = (SCREEN_HEIGHT - PLAY_HEIGHT) // 1.5
+
+                old_surface = surface
+                surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+                surface.blit(old_surface, (0, 0))
+                del old_surface
+
             elif event.type == pygame.KEYDOWN:
                 # left-arrow key - move left if possible
                 if event.key == pygame.K_LEFT:
@@ -393,35 +410,46 @@ def main(surface, high_score):
 
 # main menu to start game
 def main_menu(window):
+    global SCREEN_WIDTH, SCREEN_HEIGHT
+
     run = True
     while run:
         window.fill(WINDOW_COLOR)
         # Title
-        font = pygame.font.SysFont('phosphate', 200)
+        title_size = SCREEN_HEIGHT // 5
+        font = pygame.font.SysFont('phosphate', title_size)
         title = font.render('TETRIS', 1, WHITE)
         title_x = (SCREEN_WIDTH - title.get_width()) / 2
         title_y = (SCREEN_HEIGHT - title.get_height()) / 2
         window.blit(title, (title_x, title_y))
 
         # Press Any Key
-        font = pygame.font.SysFont('futura', 24)
+        label_size = SCREEN_HEIGHT // 40
+        font = pygame.font.SysFont('futura', label_size)
         label = font.render('Press Any Key To Play!', 1, WHITE)
         label_x = (SCREEN_WIDTH - title.get_width()) / 2
         label_y = (SCREEN_HEIGHT - title.get_height()) / 2
         window.blit(label, (label_x, label_y))
         pygame.display.update()
 
-        # Start or quit game
+        # Start or quit game (allow resize too)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
                 high_score = get_high_score()
                 main(window, high_score)
+            if event.type == pygame.VIDEORESIZE:
+                old_window = window
+                SCREEN_WIDTH = event.w
+                SCREEN_HEIGHT = event.h
+                window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+                window.blit(old_window, (0, 0))
+                del old_window
 
     pygame.display.quit()
 
 # Initialize window and open main menu
-window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SCALED)
+window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption('Tetris')
 main_menu(window)
