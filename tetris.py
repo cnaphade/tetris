@@ -260,6 +260,7 @@ def check_failure(locked_positions, surface, score):
 
             pygame.display.update()
             pygame.time.delay(2000)
+            pygame.event.clear()
             return True
     return False
 
