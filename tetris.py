@@ -310,6 +310,7 @@ def main(surface, high_score):
     current_piece = get_random_piece()
     next_piece = get_random_piece()
     change_piece = False
+    pygame.key.set_repeat(200)
 
     pygame.mixer.music.load("tetris_theme.mp3")
     pygame.mixer.music.play(-1)
